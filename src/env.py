@@ -46,11 +46,6 @@ class F110_Wrapped(gym.Wrapper):
         if self.map_manager.waypoints is not None:
             self.waypoints_passed = [False] * len(self.map_manager.waypoints)  # 各Waypointの通過状態を保持
 
-        # Waypoint描画機能をレンダリングコールバックとして追加
-        self.env.add_render_callback(self.render_waypoints)
-
-        
-
 
     def step(self, action):
         
@@ -105,28 +100,4 @@ class F110_Wrapped(gym.Wrapper):
         observation, _, _, _ = self.env.reset(poses=np.array(positions))
         return observation
         
-    def render_waypoints(self, renderer):
     
-    # Waypointが設定されていない場合は何もしない
-        if self.map_manager.waypoints is None:
-            return
-        
-        # Waypoint座標の変換とスケーリング
-        points = np.vstack((self.map_manager.waypoints[:, 0], self.map_manager.waypoints[:, 1])).T
-        scaled_points = 50. * points  # スケーリング係数は状況に応じて調整
-    
-        # 各Waypointを描画
-        for i in range(points.shape[0]):
-            # 現在のターゲットWaypointは赤色で、それ以外は灰色で表示
-            color = [255, 255, 255] if self.waypoints_passed[i] else [255,255,255]
-
-            if len(self.drawn_waypoints) < points.shape[0]:
-                b = renderer.batch.add(1, GL_POINTS, None,
-                                   ('v3f/stream', [scaled_points[i, 0], scaled_points[i, 1], 0.]),
-                                   ('c3B/stream', color))  # 色を設定
-                self.drawn_waypoints.append(b)
-            else:
-                self.drawn_waypoints[i].vertices = [scaled_points[i, 0], scaled_points[i, 1], 0.]
-                # 既存のWaypointの色を更新するには、描画オブジェクトに直接色を設定する必要があります。
-                # 以下の行は、使用しているレンダリングシステムに応じて適切に調整する必要があります。
-                self.drawn_waypoints[i].colors = color

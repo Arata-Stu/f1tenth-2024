@@ -7,7 +7,7 @@ numpy
 numba
 scikit-learn
 
-pyglet ## <1.5
+pyglet<1.5
 Pillow
 
 pyyaml
