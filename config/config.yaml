@@ -1,0 +1,15 @@
+map:
+  name: 'IMS'
+  line: 'raceline'
+
+max_epochs: 10000
+max_steps: 1000000
+batch_size: 64
+lr_actor: 3e-4
+lr_critic: 3e-4
+alpha: 0.2
+tau: 5e-3
+gamma: 0.99
+replay_size: 1000000
+warm_start_steps: 1000
+episode_length: 200

@@ -1,0 +1,14 @@
+gym
+
+torch
+pytorch_lightning
+
+numpy
+numba
+scikit-learn
+
+pyglet ## <1.5
+Pillow
+
+pyyaml
+omegaconf
