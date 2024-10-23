@@ -8,6 +8,10 @@ from pytorch_lightning import loggers as pl_loggers
 import os
 import datetime
 
+from src.map import MapManager
+from f1tenth_gym.f110_env import F110Env
+from src.env import F110_Wrapped
+
 def main():
     base_save_dir = './result/train'
     
@@ -29,8 +33,11 @@ def main():
     with open(merged_config_path, 'w') as f:
         yaml.dump(OmegaConf.to_container(merged_conf, resolve=True), f)
     
+    map_manager = MapManager(map_name=merged_conf.map.name, raceline=merged_conf.map.line, delimiter=merged_conf.map.delimiter, speed=6.0 ,dir_path='./f1tenth_racetracks/')
+    env = F110Env(map=map_manager.map_path, map_ext='.png' ,num_agents=1, num_beams = 1080)
+    env = F110_Wrapped(env=env, map_manager=map_manager)
     # データモジュールとモデルモジュールのインスタンスを作成
-    model = SACModule(config=merged_conf)
+    model = SACModule(env=env, config=merged_conf)
 
     checkpoint_callback = ModelCheckpoint(
         monitor='actor_loss',
@@ -40,14 +47,9 @@ def main():
         verbose=True,
     )
 
-    early_stopping_callback = EarlyStopping(
-        monitor='actor_loss',
-        mode='min',
-        patience=10,
-        verbose=True,
-    )
+    
 
-    callbacks = [checkpoint_callback, early_stopping_callback]
+    callbacks = [checkpoint_callback]
 
 
     # TensorBoard Loggerもsave_dirに対応させる

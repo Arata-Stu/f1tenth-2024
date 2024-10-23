@@ -1,12 +1,13 @@
 map:
   name: 'IMS'
   line: 'raceline'
+  delimiter: ';'
 
 max_epochs: 10000
 max_steps: 1000000
-batch_size: 64
-lr_actor: 3e-4
-lr_critic: 3e-4
+batch_size: 128
+lr_actor: 1e-5
+lr_critic: 1e-5
 alpha: 0.2
 tau: 5e-3
 gamma: 0.99

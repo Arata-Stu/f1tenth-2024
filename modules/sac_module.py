@@ -31,14 +31,11 @@ class SACModule(pl.LightningModule):
 
         # アクターとクリティックのネットワークを初期化
         self.actor = SACPolicyNet(obs_size, action_size)
-        self.critic1 = SACCriticNet(obs_size, action_size)
-        self.critic2 = SACCriticNet(obs_size, action_size)
-        self.target_critic1 = SACCriticNet(obs_size, action_size)
-        self.target_critic2 = SACCriticNet(obs_size, action_size)
+        self.critic = SACCriticNet(obs_size, action_size)  # クリティックネットワークを1つに統合
+        self.target_critic = SACCriticNet(obs_size, action_size)  # ターゲットクリティックも1つに統合
 
         # ターゲットネットワークの初期化
-        self.target_critic1.load_state_dict(self.critic1.state_dict())
-        self.target_critic2.load_state_dict(self.critic2.state_dict())
+        self.target_critic.load_state_dict(self.critic.state_dict())
 
         # リプレイバッファとエージェントの初期化
         self.buffer = ReplayBuffer(self.replay_size)
@@ -57,17 +54,21 @@ class SACModule(pl.LightningModule):
 
         states, actions, rewards, dones, next_states = batch
 
+        actions = actions.float()  
+        states = states.float()
+        next_states = next_states.float()
+        dones = dones.float()
+
+
         # ターゲットQ値の計算
         with torch.no_grad():
-            next_actions, next_log_probs = self.actor.sample(next_states)
-            target_q1 = self.target_critic1(next_states, next_actions)
-            target_q2 = self.target_critic2(next_states, next_actions)
+            next_actions, next_log_probs = self.actor(next_states)
+            target_q1, target_q2 = self.target_critic(next_states, next_actions)  # 統合されたクリティックネットワークから2つのQ値を取得
             target_q = torch.min(target_q1, target_q2) - self.alpha * next_log_probs
             target_q = rewards + (1 - dones) * self.gamma * target_q
 
         # クリティックの損失計算
-        current_q1 = self.critic1(states, actions)
-        current_q2 = self.critic2(states, actions)
+        current_q1, current_q2 = self.critic(states, actions)  # 同様に2つのQ値を取得
         critic_loss = F.mse_loss(current_q1, target_q) + F.mse_loss(current_q2, target_q)
 
         # クリティックの最適化
@@ -76,9 +77,8 @@ class SACModule(pl.LightningModule):
         critic_optimizer.step()
 
         # アクターの損失計算
-        actions_pred, log_probs = self.actor.sample(states)
-        q1 = self.critic1(states, actions_pred)
-        q2 = self.critic2(states, actions_pred)
+        actions_pred, log_probs = self.actor(states)
+        q1, q2 = self.critic(states, actions_pred)
         min_q = torch.min(q1, q2)
         actor_loss = (self.alpha * log_probs - min_q).mean()
 
@@ -88,8 +88,7 @@ class SACModule(pl.LightningModule):
         actor_optimizer.step()
 
         # ターゲットネットワークのソフト更新
-        self.soft_update(self.critic1, self.target_critic1, self.tau)
-        self.soft_update(self.critic2, self.target_critic2, self.tau)
+        self.soft_update(self.critic, self.target_critic, self.tau)
 
         # ロギング
         self.log('critic_loss', critic_loss, prog_bar=True)
@@ -97,10 +96,7 @@ class SACModule(pl.LightningModule):
 
     def configure_optimizers(self):
         actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr=self.lr_actor)
-        critic_optimizer = torch.optim.Adam(
-            list(self.critic1.parameters()) + list(self.critic2.parameters()),
-            lr=self.lr_critic
-        )
+        critic_optimizer = torch.optim.Adam(self.critic.parameters(), lr=self.lr_critic)
         return [actor_optimizer, critic_optimizer]
 
     def soft_update(self, source_net, target_net, tau):
@@ -116,7 +112,6 @@ class SACModule(pl.LightningModule):
         dataloader = DataLoader(
             dataset=dataset,
             batch_size=self.batch_size,
-            shuffle=True,
         )
         return dataloader
 
