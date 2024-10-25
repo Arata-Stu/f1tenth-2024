@@ -3,7 +3,7 @@ import torch
 from .buffer import Experience
 
 class Agent:
-    def __init__(self, env, replay_buffer) -> None:
+    def __init__(self, env, replay_buffer, reward) -> None:
         """Agent class for SAC, handling interaction with the environment.
 
         Args:
@@ -15,6 +15,7 @@ class Agent:
         self.replay_buffer = replay_buffer
         self.obs = self.env.reset()
         self.state = convert_obs(self.obs)
+        self.reward = reward
 
     def reset(self) -> None:
         """Resets the environment and updates the state."""
@@ -41,7 +42,7 @@ class Agent:
         # Detach and convert action to numpy array
         action = action.cpu().numpy()[0]
         # Rescale action if necessary (e.g., for environments with bounded actions)
-        # action = self.rescale_action(action)
+        action = self.rescale_action(action)
         return action
 
     def rescale_action(self, action):
@@ -55,7 +56,7 @@ class Agent:
 
         """
         
-        action = np.clip(action, 0, 1.0)
+        action = np.clip(action, -1.0, 1.0)
         return action
 
     @torch.no_grad()
@@ -78,6 +79,8 @@ class Agent:
         actions.append(action)
 
         new_obs, reward, done, info = self.env.step(actions)
+
+        reward = reward.calc_reward(pre_obs=self.obs, obs = new_obs)
         # Create an experience tuple
         new_state = convert_obs(new_obs)
         exp = Experience(self.state, action, reward, done, new_state)

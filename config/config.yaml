@@ -1,7 +1,7 @@
 map:
-  name: 'IMS'
-  line: 'raceline'
-  delimiter: ';'
+  name: 'Austin'
+  line: 'centerline'
+  delimiter: ','
 
 max_epochs: 10000
 max_steps: 1000000

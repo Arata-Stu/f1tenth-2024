@@ -6,6 +6,7 @@ import pytorch_lightning as pl
 from src.agent import Agent
 from src.buffer import ReplayBuffer
 from src.dataset import RLDataset
+from src.reward import ProgressReward
 from models.sac_model import SACPolicyNet, SACCriticNet
 from omegaconf import DictConfig
 
@@ -39,7 +40,8 @@ class SACModule(pl.LightningModule):
 
         # リプレイバッファとエージェントの初期化
         self.buffer = ReplayBuffer(self.replay_size)
-        self.agent = Agent(self.env, self.buffer)
+        self.reward = ProgressReward(map_manager=self.env.map_manager, reward_gain=0.4)
+        self.agent = Agent(self.env, self.buffer, self.reward)
         self.populate(self.warm_start_steps)
 
     def populate(self, steps: int = None) -> None:
