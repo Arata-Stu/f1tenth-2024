@@ -3,7 +3,7 @@ from omegaconf import DictConfig
 from .reward import ProgressReward, PPReward
 from .map import MapManager
 from .env import F110_Wrapped
-from ..f1tenth_gym.f110_env import F110Env
+from f1tenth_gym.f110_env import F110Env
 
 def build_reward(reward_conf:DictConfig, map_manager):
     if reward_conf.name == 'Progress':
