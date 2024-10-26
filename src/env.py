@@ -1,7 +1,6 @@
 import numpy as np
 import math
 import gym
-from pyglet.gl import GL_POINTS
 
 WAYPOINT_RADIUS = 0.5
 
