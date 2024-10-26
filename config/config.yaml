@@ -1,15 +1,35 @@
+vehicle:
+  steer_range: 0.4
+  speed_range: 5.0
+  num_beams: 1080
+  beam_fov: 4.7
+
 map:
   name: 'Austin'
   line: 'centerline'
   delimiter: ','
+  map_ext: '.png'
+
+# reward:
+#   name: 'Progress'
+#   gain: 0.4
+
+reward:
+  name: 'TAL'
+  speed_range: ???
+  steer_range: ???
+  steer_w: 0.4
+  speed_w: 0.4
+  alpha: 0.25
+  gain: 0.4
 
 max_epochs: 10000
 max_steps: 1000000
 batch_size: 128
-lr_actor: 1e-5
-lr_critic: 1e-5
-alpha: 0.2
-tau: 5e-3
+lr_actor: 0.0001
+lr_critic: 0.0001
+alpha: 0.01
+tau: 0.005
 gamma: 0.99
 replay_size: 1000000
 warm_start_steps: 1000

@@ -13,6 +13,10 @@ class Agent:
         """
         self.env = env
         self.replay_buffer = replay_buffer
+
+        self.max_steer = self.env.s_max
+        self.max_speed = self.env.v_max
+
         self.obs = self.env.reset()
         self.state = convert_obs(self.obs)
         self.reward = reward
@@ -74,7 +78,7 @@ class Agent:
         """
         actions = []
         nn_action = self.get_action(actor_net, device)
-        action = convert_action(nn_action)
+        action = convert_action(nn_action, max_steer=self.max_steer, max_speed=self.max_speed)
         # Interact with the environment
         actions.append(action)
 

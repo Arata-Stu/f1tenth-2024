@@ -1,4 +1,5 @@
 import numpy as np
+from src.planner import PurePursuitPlanner
 
 class ProgressReward:
     def __init__(self, map_manager, max_theta=100.0, reward_gain = 1.0):
@@ -91,5 +92,40 @@ class ProgressReward:
         
         return s
     
-    def update_map(self, mapmanager):
-        self.map_manager = mapmanager
+
+class PPReward:
+    def __init__(self, map_manager, steer_range, speed_range, max_theta=100.0, steer_w=0.4, speed_w=0.4, alpha= 0.25, reward_gain=1.0):
+        self.max_theta = max_theta
+        self.map_manager = map_manager
+        self.steer_range = steer_range
+        # self.speed_range = speed_range
+        self.speed_range = 20.0
+        self.steer_w = steer_w
+        self.speed_w = speed_w
+        self.alpha = alpha
+        self.reward_gain = reward_gain
+
+        wheelbase=(0.17145+0.15875)
+        self.planner = PurePursuitPlanner(wheelbase=wheelbase, map_manager=map_manager, lookahead=0.6 ,max_reacquire=20.) 
+
+    def calc_reward(self, pre_obs, obs ,action):
+        reward = 0
+
+        if obs['lap_counts'][0] == 2:
+            return 1  # complete
+        if obs['collisions'][0]:
+            return -1 # crash
+        if abs(obs['poses_theta'][0]) > self.max_theta:
+            return -1 #spin
+
+        pp_action = self.planner.plan(pre_obs, id=0, gain=0.2)
+        
+        
+        steer_reward =  (abs(pp_action[0] - action[0]) / self.steer_range)  * self.steer_w
+        throttle_reward =   (abs(pp_action[1] - action[1]) / self.speed_range) * self.speed_w
+
+        reward = self.alpha - steer_reward - throttle_reward
+        reward = max(reward, 0) # limit at 0
+
+        reward *= self.reward_gain
+        return reward
