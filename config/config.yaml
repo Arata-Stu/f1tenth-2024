@@ -23,7 +23,7 @@ reward:
   alpha: 0.25
   gain: 0.4
 
-max_epochs: 10000
+max_epochs: 100000
 max_steps: 1000000
 batch_size: 128
 lr_actor: 0.0001
