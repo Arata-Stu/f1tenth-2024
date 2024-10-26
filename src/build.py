@@ -30,8 +30,7 @@ def build_env(config:DictConfig):
     s_range = config.vehicle.steer_range
     v_range = config.vehicle.speed_range
     param = {'mu': 1.0489, 'C_Sf': 4.718, 'C_Sr': 5.4562, 'lf': 0.15875, 'lr': 0.17145, 'h': 0.074, 'm': 3.74, 'I': 0.04712, 's_min': -s_range, 's_max': s_range, 'sv_min': -3.2, 'sv_max': 3.2, 'v_switch': 7.319, 'a_max': 9.51, 'v_min':-5.0, 'v_max': v_range, 'width': 0.31, 'length': 0.58}
-    env = F110Env(map=map_manager.map_path, map_ext='.png', timestep=time_step ,num_beams=config.vehicle.num_beams, beam_fov=config.vehicle.beam_fov, num_agents=1, params=param)
-    env = F110Env(map=map_manager.map_path, map_ext=config.map_ext ,num_agents=1, num_beams = 1080)
+    env = F110Env(map=map_manager.map_path, map_ext=config.map.map_ext, timestep=time_step ,num_beams=config.vehicle.num_beams, beam_fov=config.vehicle.beam_fov, num_agents=1, params=param)
     env = F110_Wrapped(env=env, map_manager=map_manager)
 
     return env
