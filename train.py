@@ -8,6 +8,7 @@ from pytorch_lightning import loggers as pl_loggers
 import os
 import datetime
 
+from config.modifier import dynamically_modify_config
 from src.build import build_env
 
 def main():
@@ -24,7 +25,7 @@ def main():
     # 各 YAML ファイルを読み込んで OmegaConf にマージ
     configs = [OmegaConf.load(path) for path in config_paths]
     merged_conf = OmegaConf.merge(*configs)
-    
+    dynamically_modify_config(merged_conf)
     # 統合されたconfigを保存
     os.makedirs(save_dir, exist_ok=True)  # 保存ディレクトリを作成
     merged_config_path = os.path.join(save_dir, 'merged_config.yaml')
