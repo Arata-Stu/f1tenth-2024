@@ -7,7 +7,7 @@ class ProgressReward:
         self.map_manager = map_manager
         self.reward_gain = reward_gain
         
-    def calc_reward(self, pre_obs, obs ,action):
+    def calc_reward(self, pre_obs, obs ,action=None):
         reward = 0
 
         if obs['lap_counts'] == 1:

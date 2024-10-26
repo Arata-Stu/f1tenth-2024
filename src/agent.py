@@ -84,7 +84,7 @@ class Agent:
 
         new_obs, reward, done, info = self.env.step(actions)
 
-        reward = self.reward.calc_reward(pre_obs=self.obs, obs = new_obs)
+        reward = self.reward.calc_reward(pre_obs=self.obs, obs = new_obs, action=action)
         # Create an experience tuple
         new_state = convert_obs(new_obs)
         exp = Experience(self.state, action, reward, done, new_state)
